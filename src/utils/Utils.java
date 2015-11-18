@@ -1,6 +1,5 @@
 package utils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import it.sauronsoftware.ftp4j.FTPAbortedException;
@@ -36,34 +35,51 @@ public class Utils {
 		}
 	}
 
-	public static void connectFTP(FTPClient client)
-			throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException {
+	public static void connectFTP(FTPClient client) throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException {
 		client.connect(server);
-		System.out.println("Successful connection to the server\n");
+		System.out.println("Successful connection to the server");
 	}
 
-	public static void loginFTP(FTPClient client)
-			throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException {
+	public static void loginFTP(FTPClient client) throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException {
 		client.login(login, pass);
 		System.out.println("Successful authentication on the server\n");
-
+		
 	}
+	public static void enterFTP(FTPClient client) throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException {
+		Utils.connectFTP(client);
+		Utils.loginFTP(client);
+	}
+	
 
-	public static void goIntoFolder(FTPClient client, String[] commandData)
-			throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException {
+	public static void goIntoFolder(FTPClient client, String[] commandData) {
 		String dir = commandData[PARAM1];
-		client.changeDirectory(dir);
+		try {
+			client.changeDirectory(dir);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			System.out.println("Unable to go to the directory (" + e.getMessage() + ")\n");
+		}
+		Utils.printListOfFiles(client);
 	}
 
+	public static void goToParentDirectory(FTPClient client, String[] commandData) {
+		try {
+			client.changeDirectoryUp();
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			System.out.println("Unable to go to the parent directory (" + e.getMessage() + ")\n");
+		}
+		Utils.printListOfFiles(client);
+	}
 
-	public static void downloadFile(FTPClient client, String[] commandData)
-			throws IllegalStateException, FileNotFoundException, IOException, FTPIllegalReplyException, FTPException,
-			FTPDataTransferException, FTPAbortedException {
+	public static void downloadFile(FTPClient client, String[] commandData) {
 		String file = commandData[PARAM1];
 
-		client.download(file, new java.io.File(file));
+		try {
+			client.download(file, new java.io.File(file));
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException
+				| FTPDataTransferException | FTPAbortedException e) {
+			System.out.println("Unable to save the file \n (" + e.getMessage() + ")\n");
+		}
 		System.out.println("File " + file + " has been saved succesfully");
-
 	}
 
 	public static void printListOfFiles(FTPClient client) {
@@ -73,12 +89,16 @@ public class Utils {
 		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException
 				| FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
 			// TODO Auto-generated catch block
-			System.out.println("Cannot get list of files \n");
+			System.out.println("Cannot get list of files  (" + e.getMessage() + ")\n");
 		}
-		System.out.println("-----List Of Files----- \n");
+		System.out.println("-----List Of Files-----");
 		for (FTPFile f : list) {
-			System.out.println(f.getName());
+			if (f.getType() == 1) {
+				System.out.println("[" + f.getName() + "]");
+			} else {
+				System.out.println(f.getName());
+			}
 		}
-		System.out.println("\n");
+		System.out.println("----------------------- \n");
 	}
 }

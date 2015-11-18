@@ -2,10 +2,7 @@ package runner;
 
 import java.io.IOException;
 import java.util.Scanner;
-
-import it.sauronsoftware.ftp4j.FTPAbortedException;
 import it.sauronsoftware.ftp4j.FTPClient;
-import it.sauronsoftware.ftp4j.FTPDataTransferException;
 import it.sauronsoftware.ftp4j.FTPException;
 import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 import utils.Utils;
@@ -27,7 +24,7 @@ public class ClientRunner {
 
 	public static void main(String[] args) {
 		FTPClient client = new FTPClient();
-		boolean loop = false;
+		boolean loop = true;
 
 		System.out.println("--------FTP Client----------\n" + "Type \"help\" to get USAGE Manual\n"
 				+ "Type \"exit\" to exit client\n");
@@ -43,67 +40,42 @@ public class ClientRunner {
 			case "ftp":
 
 				Utils.initLoginData(client, commandData);
-
 				try {
-					Utils.connectFTP(client);
-				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
-					System.out.println("Unable to connect to server\n");
-					loop = true;
+					Utils.enterFTP(client);
+				} catch (IllegalStateException | FTPIllegalReplyException e) {
+					break;
+				} catch (IOException e) {
+					System.out.println("Unable connect to the server");
+					break;
+				} catch (FTPException e) {
+					System.out.println("Unable authorise on the server");
 					break;
 				}
-
-				try {
-					Utils.loginFTP(client);
-				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e1) {
-					System.out.println("Unable to log in to the server\n");
-					loop = true;
-					break;
-				}
-
 				Utils.printListOfFiles(client);
-				loop = true;
 				break;
 
 			case "cd":
-				try {
-					Utils.goIntoFolder(client, commandData);
-				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e1) {
-					System.out.println("Unable to go to the directory\n");
-				}
 
-				Utils.printListOfFiles(client);
-				loop = true;
+				Utils.goIntoFolder(client, commandData);
 				break;
 
 			case "back":
-				try {
-					client.changeDirectoryUp();
-				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e1) {
-					System.out.println("Unable to go to the parent directory\n");
-				}
-				
-				Utils.printListOfFiles(client);
-				loop = true;
+
+				Utils.goToParentDirectory(client, commandData);
 				break;
 
 			case "dload":
-				try {
-					Utils.downloadFile(client, commandData);
-				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException
-						| FTPDataTransferException | FTPAbortedException e) {
-					System.out.println("Unable to save the file\n");
-					loop = true;
-					break;
-				}
-				loop = true;
+
+				Utils.downloadFile(client, commandData);
 				break;
 
 			case "help":
+
 				System.out.println(USAGE);
-				loop = true;
 				break;
 
 			case "exit":
+
 				sc.close();
 				loop = false;
 				break;
@@ -113,11 +85,5 @@ public class ClientRunner {
 			}
 
 		} while (loop == true);
-
-		do {
-			System.exit(0);
-
-		} while (loop == false);
-
 	}
 }
