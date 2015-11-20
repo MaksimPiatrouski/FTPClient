@@ -113,9 +113,9 @@ public class Utils {
 
 		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException
 				| FTPDataTransferException | FTPAbortedException e) {
-			System.out.println("Unable to save the file \n (" + e.getMessage() + ")\n");
+			System.out.println("Unable to save the file (" + e.getMessage() + ")\n");
 		}
-		System.out.println("File " + file + " has been saved succesfully");
+		System.out.println("File " + file + " has been saved succesfully (in client directory)");
 	}
 
 	public static FTPFile[] getListOfFiles(FTPClient client) {
@@ -137,7 +137,7 @@ public class Utils {
 			if (f.getType() == 1) {
 				System.out.println("[" + f.getName() + "]");
 			} else {
-				System.out.println(f.getName() + "(" + f.getSize() + " bytes)");
+				System.out.println(f.getName() + " (" + f.getSize() + " bytes)");
 			}
 		}
 		System.out.println("----------------------- \n");
